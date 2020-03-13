@@ -12,4 +12,11 @@
 
 # 生成Tfrecord
 
-print("你好，海龟一号！")
+import myconsole
+
+myconsole.line("你好，海龟一号！")
+
+marketcount = myconsole.readnum("请输入要训练的市场数量，0表示全部：")
+
+mixcount = myconsole.readnum("请输入要混合的外汇市场数量，0表示全部：")
+
