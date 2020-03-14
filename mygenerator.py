@@ -31,19 +31,22 @@ def generate_training_sample(max_list, min_list, c_list, rv):
 
 def generate_training_mix_sample(date_list, max_list, min_list, c_list, rv, currency_market):
     currency_index = 0
+    max_list_mix = [0.0] * price_input_len
+    min_list_mix = [0.0] * price_input_len
+    c_list_mix = [0.0] * price_input_len
     for price_index in range(price_input_len):
         while currency_index < len(currency_market) - 1 and currency_market[currency_index]["date"] < date_list[price_index]:
             currency_index += 1
-        max_list[price_index] /= currency_market[currency_index]["c"]
-        min_list[price_index] /= currency_market[currency_index]["c"]
-        c_list[price_index] /= currency_market[currency_index]["c"]
+        max_list_mix[price_index] = max_list[price_index] / currency_market[currency_index]["c"]
+        min_list_mix[price_index] = min_list[price_index] / currency_market[currency_index]["c"]
+        c_list_mix[price_index] = c_list[price_index] / currency_market[currency_index]["c"]
     if min(min_list) > 0:
-        tr_list = [max_list[input_index] / min_list[input_index] - 1 for input_index in range(price_input_len)]
-        atr = sum(tr_list) / price_input_len
-        volatility = max(c_list[price_input_len], c_list[price_input_len - 1]) / min(c_list[price_input_len], c_list[price_input_len - 1]) - 1
+        tr_list_mix = [max_list_mix[input_index] / min_list_mix[input_index] - 1 for input_index in range(price_input_len)]
+        atr_mix = sum(tr_list_mix) / price_input_len
+        volatility_mix = max(c_list_mix[price_input_len], c_list_mix[price_input_len - 1]) / min(c_list_mix[price_input_len], c_list_mix[price_input_len - 1]) - 1
         if atr > 0 and volatility > 0:
-            rv = math.log(1 + volatility, 1 + atr)
-    return generate_training_sample(max_list, min_list, c_list, rv)
+            rv = math.log(1 + volatility_mix, 1 + atr_mix)
+    return generate_training_sample(max_list_mix, min_list_mix, c_list_mix, rv)
 
 def generate_training_samples(sample_prices, currency_markets):
     training_samples = []

@@ -32,7 +32,8 @@ validation_count = 0
 market_index = 0
 
 for (market_id,market_name) in market_list.items():
-    myconsole.out("正在载入市场" + market_name + "的数据……" + str(market_index+1) + "/" + str(training_market_count))
+    market_index += 1
+    myconsole.out("正在载入市场" + market_name + "的数据……" + str(market_index) + "/" + str(training_market_count))
     training_market = mydb.load_market(market_id)
     myconsole.out("正在生成市场" + market_name + "的训练数据……")
     training_data = mygenerator.generate_taining_data(training_market, currency_markets)
