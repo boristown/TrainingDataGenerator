@@ -5,7 +5,7 @@ timeformart = "%b %d %Y %H:%M:%S"
 def timestr(text):
     return datetime.datetime.now().strftime(timeformart) + ":" + text
 
-def line(text):
+def out(text):
     print(timestr(text))
 
 def readnum(text):
