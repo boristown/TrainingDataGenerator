@@ -26,7 +26,8 @@ market_list = mydb.load_market_list(training_market_count)
 myconsole.out("正在载入外汇市场数据……")
 currency_markets = mydb.load_currency_markets(training_currency_count)
 
-train_count, validation_count = 0
+train_count = 0
+validation_count = 0
 
 market_index = 0
 

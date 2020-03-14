@@ -22,8 +22,8 @@ def generate_training_sample_single(max_list, min_list, c_list, rv):
 def generate_training_sample(max_list, min_list, c_list, rv):
     training_sample = generate_training_sample_single(max_list, min_list, c_list, rv)
     training_sample_mirror = generate_training_sample_single(
-        [1.0 / max_value for max_value in max_list], 
         [1.0 / min_value for min_value in min_list],
+        [1.0 / max_value for max_value in max_list], 
         [1.0 / c_value for c_value in c_list], 
         rv
         )
@@ -55,7 +55,7 @@ def generate_training_samples(sample_prices, currency_markets):
     last_c_list = [o_list[input_index] if input_index == 0 else c_list[input_index - 1] for input_index in range(price_input_len)]
     max_list = [max(h_list[input_index], last_c_list[input_index]) for input_index in range(price_input_len)]
     min_list = [min(l_list[input_index], last_c_list[input_index]) for input_index in range(price_input_len)]
-    if min(min_list) > 0:
+    if min(min_list) > 0 and min(min_list) > 0:
         tr_list = [max_list[input_index] / min_list[input_index] - 1 for input_index in range(price_input_len)]
         atr = sum(tr_list) / price_input_len
         volatility = max(c_list[price_input_len], c_list[price_input_len - 1]) / min(c_list[price_input_len], c_list[price_input_len - 1]) - 1
@@ -66,9 +66,9 @@ def generate_training_samples(sample_prices, currency_markets):
             if rv >= 2:
                 mix_count = math.floor( rv ) ** 2 - 1
                 mix_index_list = np.random.choice(len(currency_markets), mix_count)
-                mix_key_list = currency_markets.keys()
+                mix_key_list = list(currency_markets.keys())
                 for mix_index in mix_index_list:
-                    training_samples.extend(generate_training_mix_sample(max_list, min_list, c_list, rv, currency_markets[mix_key_list[mix_index]]))
+                    training_samples.extend(generate_training_mix_sample(date_list, max_list, min_list, c_list, rv, currency_markets[mix_key_list[mix_index]]))
     return training_samples
 
 def generate_taining_data(training_market, currency_markets):

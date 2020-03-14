@@ -1,4 +1,4 @@
-import tensorflow as tf 
+import tensorflow.compat.v1 as tf
 import random
 
 validation_ratio = 0.005
