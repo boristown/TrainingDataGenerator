@@ -45,7 +45,7 @@ def generate_training_mix_sample(date_list, max_list, min_list, c_list, rv, curr
         tr_list_mix = [max_list_mix[input_index] / min_list_mix[input_index] - 1 for input_index in range(price_input_len)]
         atr_mix = sum(tr_list_mix) / price_input_len
         volatility_mix = max(c_list_mix[price_input_len], c_list_mix[price_input_len - 1]) / min(c_list_mix[price_input_len], c_list_mix[price_input_len - 1]) - 1
-        if atr > 0 and volatility > 0:
+        if atr_mix > 0 and volatility_mix > 0:
             rv = math.log(1 + volatility_mix, 1 + atr_mix)
     return generate_training_sample(max_list_mix, min_list_mix, c_list_mix, rv)
 
