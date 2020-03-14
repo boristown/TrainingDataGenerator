@@ -53,9 +53,9 @@ def generate_training_samples(sample_prices, currency_markets):
     l_list = [sample_price["l"] for sample_price in sample_prices]
     c_list = [sample_price["c"] for sample_price in sample_prices]
     last_c_list = [o_list[input_index] if input_index == 0 else c_list[input_index - 1] for input_index in range(price_input_len)]
-    max_list = [max(h_list[input_index], last_c_list[input_index]) for input_index in range(price_input_len)]
-    min_list = [min(l_list[input_index], last_c_list[input_index]) for input_index in range(price_input_len)]
-    if min(min_list) > 0 and min(min_list) > 0:
+    max_list = [max(h_list[input_index], l_list[input_index], o_list[input_index], c_list[input_index], last_c_list[input_index]) for input_index in range(price_input_len)]
+    min_list = [min(h_list[input_index], l_list[input_index], o_list[input_index], c_list[input_index], last_c_list[input_index]) for input_index in range(price_input_len)]
+    if min(min_list) > 0 and min(max_list) > 0:
         tr_list = [max_list[input_index] / min_list[input_index] - 1 for input_index in range(price_input_len)]
         atr = sum(tr_list) / price_input_len
         volatility = max(c_list[price_input_len], c_list[price_input_len - 1]) / min(c_list[price_input_len], c_list[price_input_len - 1]) - 1
