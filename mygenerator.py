@@ -13,10 +13,10 @@ def generate_training_sample_single(max_list, min_list, c_list, rv):
     min_price = min(min_log_list)
     price_range = max_price - min_price
     center_price = ( max_price + min_price ) / 2.0
-    training_sample["max_list"] = [(max_log_value-center_price)/price_range+0.5 for max_log_value in max_log_list]
-    training_sample["min_list"] = [(min_log_value-center_price)/price_range+0.5 for min_log_value in min_log_list]
-    training_sample["c_list"] = [(c_log_value-center_price)/price_range+0.5 for c_log_value in c_log_list]
-    training_sample["label"] = 0.5 + math.atan(rv) / math.pi if c_list[price_input_len] >  c_list[price_input_len - 1] else 0.5 - math.atan(rv) / math.pi
+    training_sample["max_prices"] = [(max_log_value-center_price)/price_range+0.5 for max_log_value in max_log_list]
+    training_sample["min_prices"] = [(min_log_value-center_price)/price_range+0.5 for min_log_value in min_log_list]
+    training_sample["c_prices"] = [(c_log_value-center_price)/price_range+0.5 for c_log_value in c_log_list]
+    training_sample["label"] = [0.5 + math.atan(rv) / math.pi] if c_list[price_input_len] >  c_list[price_input_len - 1] else [0.5 - math.atan(rv) / math.pi]
     return training_sample
 
 def generate_training_sample(max_list, min_list, c_list, rv):
