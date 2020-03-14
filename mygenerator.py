@@ -33,13 +33,14 @@ def generate_training_mix_sample(date_list, max_list, min_list, c_list, rv, curr
     currency_index = 0
     max_list_mix = [0.0] * price_input_len
     min_list_mix = [0.0] * price_input_len
-    c_list_mix = [0.0] * price_input_len
+    c_list_mix = [0.0] * (price_input_len + 1)
     for price_index in range(price_input_len):
         while currency_index < len(currency_market) - 1 and currency_market[currency_index]["date"] < date_list[price_index]:
             currency_index += 1
         max_list_mix[price_index] = max_list[price_index] / currency_market[currency_index]["c"]
         min_list_mix[price_index] = min_list[price_index] / currency_market[currency_index]["c"]
         c_list_mix[price_index] = c_list[price_index] / currency_market[currency_index]["c"]
+    c_list_mix[price_input_len] = c_list[price_input_len] / currency_market[currency_index]["c"]
     if min(min_list) > 0:
         tr_list_mix = [max_list_mix[input_index] / min_list_mix[input_index] - 1 for input_index in range(price_input_len)]
         atr_mix = sum(tr_list_mix) / price_input_len
