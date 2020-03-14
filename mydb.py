@@ -44,7 +44,7 @@ def load_currency_markets(training_currency_count):
     currency_markets = {}
     myconnector, mycursor = connector()
     if myconnector:
-        statement = 'SELECT symbol, date, c FROM pricehistory WHERE SYMBOL IN (SELECT t.symbol FROM ( ' \
+        statement = 'SELECT symbol, date, c FROM pricehistory WHERE  c > 0.0 and SYMBOL IN (SELECT t.symbol FROM ( ' \
                             'select DISTINCT symbol from symbol_alias where MARKET_TYPE = "外汇" limit ' + str(training_currency_count) + ' ' \
                             ') as t) order by symbol, date'
         mycursor.execute(statement)
@@ -59,7 +59,7 @@ def load_market(market_id):
     market = []
     myconnector, mycursor = connector()
     if myconnector:
-        statement = 'SELECT date, o, h, l, c FROM pricehistory WHERE SYMBOL = "' + market_id + '" ' \
+        statement = 'SELECT date, o, h, l, c FROM pricehistory WHERE c > 0.0 and l > 0.0 and h > 0.0 and o > 0.0 and SYMBOL = "' + market_id + '" ' \
                             'order by date'
         mycursor.execute(statement)
         dbresults = mycursor.fetchall()
