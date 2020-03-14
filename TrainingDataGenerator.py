@@ -25,10 +25,10 @@ market_list = mydb.load_market_list(training_market_count)
 myconsole.out("正在载入外汇市场数据……")
 currency_markets = mydb.load_currency_markets(training_currency_count)
 
-for market in market_list:
-    myconsole.out("正在载入市场" + market["name"] + "的数据……")
-    training_market = mydb.load_market(market["id"])
-    myconsole.out("正在生成市场" + market["name"] + "的训练数据……")
+for (market_id,market_name) in market_list.items():
+    myconsole.out("正在载入市场" + market_name + "的数据……")
+    training_market = mydb.load_market(market_id)
+    myconsole.out("正在生成市场" + market_name + "的训练数据……")
     training_data = mygenerator.generate_taining_data(training_market, currency_markets)
-    myconsole.out("正在保存市场" + market["name"] + "的训练数据……")
+    myconsole.out("正在保存市场" + market_name + "的训练数据……")
     myfile.save(training_data)
