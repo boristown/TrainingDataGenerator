@@ -8,12 +8,12 @@ def timestr(text):
 def out(text):
     print(timestr(text))
 
-def readnum(text):
+def in_num(text):
     num = input(timestr(text))
     try:
         num = int(num)
     except Exception as e:
-        print(e)
-        return readnum(text)
+        out(str(e))
+        return in_num(text)
     else:
         return num

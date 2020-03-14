@@ -1,5 +1,6 @@
 import mypsw
 import myconsole
+import mysql.connector
 
 def connector():
     try:
@@ -10,7 +11,7 @@ def connector():
             auth_plugin='mysql_native_password')
         mycursor = myconnector.cursor()
     except Exception as e:
-        myconsole.out(e)
+        myconsole.out(str(e))
         return None,None
     return myconnector, mycursor
 
@@ -23,7 +24,7 @@ def get_market_count():
         mycursor.execute(statement)
         dbresults = mycursor.fetchall()
         if len(dbresults) == 2:
-            return int(dbresults[0]), int(dbresults[1])
+            return int(dbresults[0][0]), int(dbresults[1][0])
     return 0, 0
 
 def load_market_list(training_market_count):
