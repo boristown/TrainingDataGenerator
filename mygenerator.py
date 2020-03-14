@@ -56,23 +56,35 @@ def generate_training_samples(sample_prices, currency_markets):
     h_list = [sample_price["h"] for sample_price in sample_prices]
     l_list = [sample_price["l"] for sample_price in sample_prices]
     c_list = [sample_price["c"] for sample_price in sample_prices]
-    last_c_list = [o_list[input_index] if input_index == 0 else c_list[input_index - 1] for input_index in range(price_input_len)]
-    max_list = [max(h_list[input_index], l_list[input_index], o_list[input_index], c_list[input_index], last_c_list[input_index]) for input_index in range(price_input_len)]
-    min_list = [min(h_list[input_index], l_list[input_index], o_list[input_index], c_list[input_index], last_c_list[input_index]) for input_index in range(price_input_len)]
-    if min(min_list) > 0 and min(max_list) > 0:
-        tr_list = [max_list[input_index] / min_list[input_index] - 1 for input_index in range(price_input_len)]
-        atr = sum(tr_list) / price_input_len
-        volatility = max(c_list[price_input_len], c_list[price_input_len - 1]) / min(c_list[price_input_len], c_list[price_input_len - 1]) - 1
-        if atr > 0 and volatility > 0:
-            rv = math.log(1 + volatility, 1 + atr)
-            if rv >= 1:
-                training_samples.extend(generate_training_sample(max_list, min_list, c_list, rv))
-            if rv >= 2:
-                mix_count = math.floor( rv ) ** 2 - 1
-                mix_index_list = np.random.choice(len(currency_markets), mix_count)
-                mix_key_list = list(currency_markets.keys())
-                for mix_index in mix_index_list:
-                    training_samples.extend(generate_training_mix_sample(date_list, max_list, min_list, c_list, rv, currency_markets[mix_key_list[mix_index]]))
+
+    max_time = 0   # 已知最大连续出现次数初始为0
+    cur_time = 1   # 记录当前元素是第几次连续出现
+    pre_element = None   # 记录上一个元素是什么
+    for i in c_list:
+        if i == pre_element:   # 如果当前元素和上一个元素相同,连续出现次数+1,并更新最大值
+            cur_time += 1
+            max_time = max((cur_time, max_time))
+        else:   # 不同则刷新计数器
+            pre_element = i
+            cur_time = 1
+    if max_time < 5: #收盘价格不能连续5天相同
+        last_c_list = [o_list[input_index] if input_index == 0 else c_list[input_index - 1] for input_index in range(price_input_len)]
+        max_list = [max(h_list[input_index], l_list[input_index], o_list[input_index], c_list[input_index], last_c_list[input_index]) for input_index in range(price_input_len)]
+        min_list = [min(h_list[input_index], l_list[input_index], o_list[input_index], c_list[input_index], last_c_list[input_index]) for input_index in range(price_input_len)]
+        if min(min_list) > 0 and min(max_list) > 0:
+            tr_list = [max_list[input_index] / min_list[input_index] - 1 for input_index in range(price_input_len)]
+            atr = sum(tr_list) / price_input_len
+            volatility = max(c_list[price_input_len], c_list[price_input_len - 1]) / min(c_list[price_input_len], c_list[price_input_len - 1]) - 1
+            if atr > 0 and volatility > 0:
+                rv = math.log(1 + volatility, 1 + atr)
+                if rv >= 1:
+                    training_samples.extend(generate_training_sample(max_list, min_list, c_list, rv))
+                if rv >= 2:
+                    mix_count = math.floor( rv ) ** 2 - 1
+                    mix_index_list = np.random.choice(len(currency_markets), mix_count)
+                    mix_key_list = list(currency_markets.keys())
+                    for mix_index in mix_index_list:
+                        training_samples.extend(generate_training_mix_sample(date_list, max_list, min_list, c_list, rv, currency_markets[mix_key_list[mix_index]]))
     return training_samples
 
 def generate_taining_data(training_market, currency_markets):
