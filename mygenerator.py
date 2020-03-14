@@ -32,7 +32,7 @@ def generate_training_sample(max_list, min_list, c_list, rv):
 def generate_training_mix_sample(date_list, max_list, min_list, c_list, rv, currency_market):
     currency_index = 0
     for price_index in range(price_input_len):
-        while currency_index < len(currency_market) and currency_market[currency_index]["date"] < date_list[price_index]:
+        while currency_index < len(currency_market) - 1 and currency_market[currency_index]["date"] < date_list[price_index]:
             currency_index += 1
         max_list[price_index] /= currency_market[currency_index]["c"]
         min_list[price_index] /= currency_market[currency_index]["c"]
