@@ -76,12 +76,15 @@ def load_market(market_id):
             break
         close1 = market[price_index1]["c"]
         close2 = market[price_index2]["c"]
+        close3 = market[price_index3]["c"]
         open2 = market[price_index2]["o"]
         open3 = market[price_index3]["o"]
-        gap12 = max(close1,open2) / min(close1,open2)
-        gap23 = max(close2,open3) / min(close2,open3)
-        gap13 = max(close1,open3) / min(close1,open3)
-        if gap12 > gap13 and gap23 > gap13:
+        gap12 = max(close1,open2) / min(close1,open2) - 1
+        gap23 = max(close2,open3) / min(close2,open3) - 1
+        gap13 = max(close1,open3) / min(close1,open3) - 1
+        ratio12 = max(close1,close2) / min(close1,close2) - 1
+        ratio13 = max(close1,close3) / min(close1,close3) - 1
+        if (gap12 > gap13 and gap23 > gap13) or ratio12 > (ratio13 * 10):
             market.remove(market[price_index2])
             marketlen -= 1
     return market
