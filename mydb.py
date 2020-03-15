@@ -65,4 +65,23 @@ def load_market(market_id):
         dbresults = mycursor.fetchall()
         for dbresult in dbresults:
             market.append({"date":dbresult[0], "o":dbresult[1], "h":dbresult[2], "l":dbresult[3], "c":dbresult[4]})
+    marketlen = len(market)
+    price_index1 = 0
+    price_index2 = 1
+    price_index3 = 2
+    for price_index1 in range(marketlen-2):
+        price_index2 = price_index1 + 1
+        price_index3 = price_index2 + 1
+        if price_index3 >= marketlen:
+            break
+        close1 = market[price_index1]["c"]
+        close2 = market[price_index2]["c"]
+        open2 = market[price_index2]["o"]
+        open3 = market[price_index3]["o"]
+        gap12 = max(close1,open2) / min(close1,open2)
+        gap23 = max(close2,open3) / min(close2,open3)
+        gap13 = max(close1,open3) / min(close1,open3)
+        if gap12 > gap13 and gap23 > gap13:
+            market.remove(market[price_index2])
+            marketlen -= 1
     return market

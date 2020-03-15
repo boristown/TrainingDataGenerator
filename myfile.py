@@ -1,16 +1,22 @@
 import tensorflow.compat.v1 as tf
 import random
+import os
+import math
 
 validation_ratio = 0.005
 
-def save(training_data, market_id, train_count, validation_count):
+def save(training_data, market_id, train_count, validation_count, max_rv):
     if random.random() < validation_ratio:
         prefix="validation-"
         validation_count += len(training_data)
     else:
         prefix="train-"
         train_count += len(training_data)
-    file_name = prefix + market_id +".tfrecord"
+    path = "Output"
+    isExists=os.path.exists(path)
+    if not isExists:
+        os.makedirs(path)
+    file_name = "Output/" + prefix + str(math.floor(max_rv)) + "_" + market_id +".tfrecord"
     tfwriter = tf.python_io.TFRecordWriter(file_name,
                                            options=tf.python_io.TFRecordOptions(
                                                tf.python_io.TFRecordCompressionType.ZLIB))
