@@ -69,8 +69,8 @@ def generate_training_samples(sample_prices, currency_markets, max_rv):
             pre_element = i
             cur_time = 1
             
-    max_span = datetime.timedelta(days=0)   # 已知最大连续出现次数初始为0
-    cur_span = 1   # 记录当前元素是第几次连续出现
+    max_span = datetime.timedelta(days=0)   # 已知最大时间间隔是0
+    cur_span = 1   # 记录当前时间间隔
     for input_index in range(price_input_len):
         cur_span = date_list[input_index+1] - date_list[input_index]
         max_span = max((cur_span, max_span))
@@ -81,7 +81,7 @@ def generate_training_samples(sample_prices, currency_markets, max_rv):
         close_open_cur = max(c_list[input_index], o_list[input_index + 1]) / min(c_list[input_index], o_list[input_index + 1])
         close_open_max = max(close_open_cur, close_open_max)
 
-    if max_time < 5 and max_span < datetime.timedelta(days=10) and close_open_max < 2 : #收盘价格不能连续5天相同,日期相隔不能超过10天
+    if max_time < 2 and max_span < datetime.timedelta(days=5) and close_open_max < 1.5 : #收盘价格不能连续2天相同,日期相隔不能达到5天，收盘开盘不能相差1.5倍
         last_c_list = [o_list[input_index] if input_index == 0 else c_list[input_index - 1] for input_index in range(price_input_len)]
         max_list = [max(h_list[input_index], l_list[input_index], o_list[input_index], c_list[input_index], last_c_list[input_index]) for input_index in range(price_input_len)]
         min_list = [min(h_list[input_index], l_list[input_index], o_list[input_index], c_list[input_index], last_c_list[input_index]) for input_index in range(price_input_len)]
@@ -94,7 +94,7 @@ def generate_training_samples(sample_prices, currency_markets, max_rv):
                 max_rv = max(rv, max_rv)
                 if rv >= 1:
                     training_samples.extend(generate_training_sample(max_list, min_list, c_list, rv))
-                    mix_count = (math.floor( rv ) ** 2) * 3 - 1
+                    mix_count = (math.floor( rv ) ** 3) - 1
                     mix_index_list = np.random.choice(len(currency_markets), mix_count)
                     mix_key_list = list(currency_markets.keys())
                     for mix_index in mix_index_list:

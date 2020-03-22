@@ -3,7 +3,7 @@ import random
 import os
 import math
 
-validation_ratio = 0.005
+validation_ratio = 0.01
 
 def save(training_data, market_id, train_count, validation_count, max_rv):
     if random.random() < validation_ratio:
