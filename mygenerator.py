@@ -92,9 +92,9 @@ def generate_training_samples(sample_prices, currency_markets, max_rv):
             if atr > 0 and volatility > 0:
                 rv = math.log(1 + volatility, 1 + atr)
                 max_rv = max(rv, max_rv)
-                if rv >= 1:
+                if rv >= 2:
                     training_samples.extend(generate_training_sample(max_list, min_list, c_list, rv))
-                    mix_count = int(math.floor( rv ) ** 2.5) - 1
+                    mix_count = int(math.floor( rv /2) ** 3) - 1
                     mix_index_list = np.random.choice(len(currency_markets), mix_count)
                     mix_key_list = list(currency_markets.keys())
                     for mix_index in mix_index_list:
