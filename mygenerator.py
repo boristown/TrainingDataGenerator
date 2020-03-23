@@ -81,7 +81,7 @@ def generate_training_samples(sample_prices, currency_markets, max_rv):
         close_open_cur = max(c_list[input_index], o_list[input_index + 1]) / min(c_list[input_index], o_list[input_index + 1])
         close_open_max = max(close_open_cur, close_open_max)
 
-    if max_time < 2 and max_span < datetime.timedelta(days=5) and close_open_max < 1.5 : #收盘价格不能连续2天相同,日期相隔不能达到5天，收盘开盘不能相差1.5倍
+    if max_time < 3 and max_span < datetime.timedelta(days=7) and close_open_max < 1.8 : #收盘价格不能连续3天相同,日期相隔不能达到7天，收盘开盘不能相差1.8倍
         last_c_list = [o_list[input_index] if input_index == 0 else c_list[input_index - 1] for input_index in range(price_input_len)]
         max_list = [max(h_list[input_index], l_list[input_index], o_list[input_index], c_list[input_index], last_c_list[input_index]) for input_index in range(price_input_len)]
         min_list = [min(h_list[input_index], l_list[input_index], o_list[input_index], c_list[input_index], last_c_list[input_index]) for input_index in range(price_input_len)]
@@ -94,7 +94,7 @@ def generate_training_samples(sample_prices, currency_markets, max_rv):
                 max_rv = max(rv, max_rv)
                 if rv >= 1:
                     training_samples.extend(generate_training_sample(max_list, min_list, c_list, rv))
-                    mix_count = int(min(40, round( rv / 2.0)) ** 3 * 10) - 1
+                    mix_count = int(min(42, round( rv / 1.0)) ** 3 * 10) - 1
                     mix_index_list = np.random.choice(len(currency_markets), mix_count)
                     mix_key_list = list(currency_markets.keys())
                     for mix_index in mix_index_list:
