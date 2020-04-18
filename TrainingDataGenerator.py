@@ -16,7 +16,7 @@ import mydb #这是数据库处理的相关代码
 import myfile #这是tfrecord文件保存的相关代码
 import mygenerator #这是训练数据生成器的相关代码
 
-myconsole.out("你好，我是海龟二号！现在就开始生成比海龟一号更好的训练数据吧！")
+myconsole.out("你好，我是海龟三号！第一个趋势识别系统，现在就开始生成训练数据吧！")
 myconsole.out("正在统计全球市场信息……")
 market_total, currency_total = mydb.get_market_count()
 training_market_count = myconsole.in_num("请输入要训练的市场数量，总计" + str(market_total) + "个市场：")
