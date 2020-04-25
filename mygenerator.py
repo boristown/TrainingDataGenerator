@@ -59,14 +59,14 @@ def get_exit_index(h_list, l_list, c_list, atr):
     #回调1ATR时退出
     for currentindex in range(price_input_len, len(c_list)):
         exitindex = currentindex
-        high_price = max(h_list[currentindex], high_price)
-        low_price = min(l_list[currentindex], low_price)
-        if high_price / c_list[currentindex] - 1 > atr and not high_stop:
+        if high_price / l_list[currentindex] - 1 > atr and not high_stop:
             high_stop = True
-        if  c_list[currentindex] / low_price - 1 > atr and not low_stop:
+        if  h_list[currentindex] / low_price - 1 > atr and not low_stop:
             low_stop = True
         if high_stop and low_stop:
             return exitindex
+        high_price = max(h_list[currentindex], high_price)
+        low_price = min(l_list[currentindex], low_price)
     return exitindex
 
 def generate_training_samples(sample_prices, currency_markets, max_rv):
