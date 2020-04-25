@@ -56,7 +56,7 @@ def get_exit_index(h_list, l_list, c_list, atr):
     high_price = low_price = c_list[price_input_len-1]
     high_stop = False
     low_stop = False
-    #回调1ATR时退出
+    #回调2ATR时退出
     for currentindex in range(price_input_len, len(c_list)):
         exitindex = currentindex
         if high_price / l_list[currentindex] - 1 > atr and not high_stop:
@@ -107,7 +107,7 @@ def generate_training_samples(sample_prices, currency_markets, max_rv):
         if min(min_list) > 0 and min(max_list) > 0:
             tr_list = [max_list[input_index] / min_list[input_index] - 1 for input_index in range(price_input_len)]
             atr = sum(tr_list) / price_input_len
-            exitindex = get_exit_index(h_list, l_list, c_list, atr)
+            exitindex = get_exit_index(h_list, l_list, c_list, atr * 2)
             volatility = max(c_list[exitindex], c_list[price_input_len - 1]) / min(c_list[exitindex], c_list[price_input_len - 1]) - 1
             if atr > 0 and volatility > 0:
                 rv = math.log(1 + volatility, 1 + atr)
