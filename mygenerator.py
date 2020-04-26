@@ -109,13 +109,13 @@ def generate_training_samples(sample_prices, currency_markets, max_rv):
             atr = sum(tr_list) / price_input_len
             exitindex = get_exit_index(h_list, l_list, c_list, atr * 2)
             volatility = max(c_list[exitindex], c_list[price_input_len - 1]) / min(c_list[exitindex], c_list[price_input_len - 1]) - 1
-            if atr > 0 and volatility > 0:
+            if atr > 0 and volatility > 0 and atr < 10:
                 rv = math.log(1 + volatility, 1 + atr)
                 max_rv = max(rv, max_rv)
                 if rv >= 1:
                     training_samples.extend(generate_training_sample(max_list, min_list, c_list[:exitindex+1], rv))
                     #mix_count = int(min(32, math.floor(rv)) ** 2 * 1) - 1
-                    mix_count = int(min(128, math.floor(volatility / atr))) - 1
+                    mix_count = int(math.floor(volatility / atr * 2))
                     mix_index_list = np.random.choice(len(currency_markets), mix_count)
                     mix_key_list = list(currency_markets.keys())
                     for mix_index in mix_index_list:
