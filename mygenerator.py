@@ -88,11 +88,11 @@ def generate_training_samples(sample_prices, currency_markets, max_rv):
             pre_element = i
             cur_time = 1
             
-    max_span = datetime.timedelta(days=0)   # 已知最大时间间隔是0
-    cur_span = 1   # 记录当前时间间隔
-    for input_index in range(price_input_len):
-        cur_span = date_list[input_index+1] - date_list[input_index]
-        max_span = max((cur_span, max_span))
+    #max_span = datetime.timedelta(days=0)   # 已知最大时间间隔是0
+    #cur_span = 1   # 记录当前时间间隔
+    #for input_index in range(price_input_len):
+    #    cur_span = date_list[input_index+1] - date_list[input_index]
+    #    max_span = max((cur_span, max_span))
 
     close_open_max = 1
     close_open_cur = 1
@@ -100,7 +100,7 @@ def generate_training_samples(sample_prices, currency_markets, max_rv):
         close_open_cur = max(c_list[input_index], o_list[input_index + 1]) / min(c_list[input_index], o_list[input_index + 1])
         close_open_max = max(close_open_cur, close_open_max)
 
-    if max_time < 3 and max_span < datetime.timedelta(days=7) and close_open_max < 1.8 : #收盘价格不能连续3天相同,日期相隔不能达到7天，收盘开盘不能相差1.8倍
+    if max_time < 3 and close_open_max < 5 : #收盘价格不能连续3天相同,日期相隔不能达到7天，收盘开盘不能相差5倍
         last_c_list = [o_list[input_index] if input_index == 0 else c_list[input_index - 1] for input_index in range(price_input_len)]
         max_list = [max(h_list[input_index], l_list[input_index], o_list[input_index], c_list[input_index], last_c_list[input_index]) for input_index in range(price_input_len)]
         min_list = [min(h_list[input_index], l_list[input_index], o_list[input_index], c_list[input_index], last_c_list[input_index]) for input_index in range(price_input_len)]
