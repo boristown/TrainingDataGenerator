@@ -115,7 +115,7 @@ def generate_training_samples(sample_prices, currency_markets, max_rv):
                 if rv >= 1:
                     training_samples.extend(generate_training_sample(max_list, min_list, c_list[:exitindex+1], rv))
                     #mix_count = int(min(32, math.floor(rv)) ** 2 * 1) - 1
-                    mix_count = int(min(128, math.floor(volatility / atr)) * 3) - 1
+                    mix_count = int(min(128, math.floor(volatility / atr)) * 1) - 1
                     mix_index_list = np.random.choice(len(currency_markets), mix_count)
                     mix_key_list = list(currency_markets.keys())
                     for mix_index in mix_index_list:
@@ -125,12 +125,37 @@ def generate_training_samples(sample_prices, currency_markets, max_rv):
 def generate_taining_data(training_market, currency_markets):
     training_data = []
     max_rv = 0
-    training_total_len = len(training_market) - price_input_len
-    for training_data_index in range(training_total_len):
-        training_samples, max_rv = generate_training_samples(
-            #training_market[training_data_index:training_data_index+price_input_len+1], 
-            training_market[training_data_index:], 
-            currency_markets, max_rv)
-        training_data.extend(training_samples)
+    maxstep = math.floor(len(training_market) * 1.0 / (price_input_len + 1.0)) + 1
+    for steplen in range(1, maxstep):
+        training_market_step = get_training_market(training_market, steplen)
+        training_total_len = len(training_market_step) - price_input_len
+        for training_data_index in range(training_total_len):
+            training_samples, max_rv = generate_training_samples(
+                #training_market_step[training_data_index:training_data_index+price_input_len+1], 
+                training_market_step[training_data_index:], 
+                currency_markets, max_rv)
+            training_data.extend(training_samples)
     random.shuffle(training_data)
     return training_data, max_rv
+
+#k线合并
+def get_training_market(training_market, steplen):
+    dayscount = len(training_market)
+    klinecount = math.floor(dayscount * 1.0 / steplen)
+    training_market_step = []
+    for klineindex in range(klinecount):
+        originindex = klineindex * steplen
+        klineticker = {
+            "date":training_market[originindex]["date"],
+            "o":training_market[originindex]["o"],
+            "h":training_market[originindex]["h"],
+            "l":training_market[originindex]["l"],
+            "c":training_market[originindex]["c"],
+            }
+        for stepindex in range(steplen):
+            originindex = klineindex * steplen + stepindex
+            klineticker["h"] = max(klineticker["h"], training_market[originindex]["h"])
+            klineticker["l"] = min(klineticker["l"], training_market[originindex]["l"])
+            klineticker["c"] = training_market[originindex]["c"]
+        training_market_step.append(klineticker)
+    return training_market_step
