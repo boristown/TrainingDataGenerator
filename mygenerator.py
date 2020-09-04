@@ -4,6 +4,7 @@ import numpy as np
 import datetime
 
 price_input_len = 120
+atr_len = 20
 
 def generate_training_sample_single(max_list, min_list, c_list, rv):
     training_sample = {}
@@ -30,7 +31,7 @@ def generate_training_sample(max_list, min_list, c_list, rv):
         )
     return [training_sample, training_sample_mirror]
 
-def generate_training_mix_sample(date_list, max_list, min_list, c_list, rv, currency_market):
+def generate_training_mix_sample(date_list, max_list, min_list, c_list, rv, currency_market, exitprice):
     currency_index = 0
     max_list_mix = [0.0] * price_input_len
     min_list_mix = [0.0] * price_input_len
@@ -42,32 +43,37 @@ def generate_training_mix_sample(date_list, max_list, min_list, c_list, rv, curr
             max_list_mix[price_index] = max_list[price_index] / currency_market[currency_index]["c"]
             min_list_mix[price_index] = min_list[price_index] / currency_market[currency_index]["c"]
         c_list_mix[price_index] = c_list[price_index] / currency_market[currency_index]["c"]
+    exitprice_mix = exitprice / currency_market[currency_index]["c"]
     #c_list_mix[price_input_len] = c_list[price_input_len] / currency_market[currency_index]["c"]
     if min(min_list) > 0:
-        tr_list_mix = [max_list_mix[input_index] / min_list_mix[input_index] - 1 for input_index in range(price_input_len)]
-        atr_mix = sum(tr_list_mix) / price_input_len
-        volatility_mix = max(c_list_mix[-1], c_list_mix[price_input_len - 1]) / min(c_list_mix[-1], c_list_mix[price_input_len - 1]) - 1
+        tr_list_mix = [max_list_mix[input_index] / min_list_mix[input_index] - 1 for input_index in range(price_input_len - atr_len - 1, price_input_len)]
+        #atr_mix = sum(tr_list_mix) / price_input_len
+        atr_mix = sum(tr_list_mix) / atr_len
+        #volatility_mix = max(c_list_mix[-1], c_list_mix[price_input_len - 1]) / min(c_list_mix[-1], c_list_mix[price_input_len - 1]) - 1
+        volatility_mix = max(exitprice_mix, c_list_mix[price_input_len - 1]) / min(exitprice_mix, c_list_mix[price_input_len - 1]) - 1
         if atr_mix > 0 and volatility_mix > 0:
             rv = math.log(1 + volatility_mix, 1 + atr_mix)
     return generate_training_sample(max_list_mix, min_list_mix, c_list_mix, rv)
 
-def get_exit_index(h_list, l_list, c_list, atr):
+def get_exit_index(h_list, l_list, c_list, atr2):
     exitindex = price_input_len
     high_price = low_price = c_list[price_input_len-1]
     high_stop = False
     low_stop = False
-    #回调2ATR时退出
+    #回调2ATR时退出，从入场日到结束日
     for currentindex in range(price_input_len, len(c_list)):
         exitindex = currentindex
-        if high_price / l_list[currentindex] - 1 > atr and not high_stop:
+        if high_price / l_list[currentindex] - 1 > atr2 and not high_stop:
             high_stop = True
-        if  h_list[currentindex] / low_price - 1 > atr and not low_stop:
+            exitprice = high_price / (atr2 + 1)
+        if  h_list[currentindex] / low_price - 1 > atr2 and not low_stop:
             low_stop = True
+            exitprice = low_price * (atr2 + 1)
         if high_stop and low_stop:
-            return exitindex
+            return exitindex, exitprice
         high_price = max(h_list[currentindex], high_price)
         low_price = min(l_list[currentindex], low_price)
-    return exitindex
+    return exitindex, c_list[-1]
 
 def generate_training_samples(sample_prices, currency_markets, max_rv):
     training_samples = []
@@ -88,11 +94,11 @@ def generate_training_samples(sample_prices, currency_markets, max_rv):
             pre_element = i
             cur_time = 1
             
-    #max_span = datetime.timedelta(days=0)   # 已知最大时间间隔是0
-    #cur_span = 1   # 记录当前时间间隔
-    #for input_index in range(price_input_len):
-    #    cur_span = date_list[input_index+1] - date_list[input_index]
-    #    max_span = max((cur_span, max_span))
+    max_span = datetime.timedelta(days=0)   # 已知最大时间间隔是0
+    cur_span = 1   # 记录当前时间间隔
+    for input_index in range(price_input_len):
+        cur_span = date_list[input_index+1] - date_list[input_index]
+        max_span = max((cur_span, max_span))
 
     close_open_max = 1
     close_open_cur = 1
@@ -100,41 +106,49 @@ def generate_training_samples(sample_prices, currency_markets, max_rv):
         close_open_cur = max(c_list[input_index], o_list[input_index + 1]) / min(c_list[input_index], o_list[input_index + 1])
         close_open_max = max(close_open_cur, close_open_max)
 
-    if max_time < 3 and close_open_max < 5 : #收盘价格不能连续3天相同,日期相隔不能达到7天，收盘开盘不能相差5倍
+    #收盘价格不能连续3天相同,日期相隔不能达到7天，收盘开盘不能相差5倍
+    if max_time < 3 and max_span < datetime.timedelta(days=7) and close_open_max < 5 : 
         last_c_list = [o_list[input_index] if input_index == 0 else c_list[input_index - 1] for input_index in range(price_input_len)]
         max_list = [max(h_list[input_index], l_list[input_index], o_list[input_index], c_list[input_index], last_c_list[input_index]) for input_index in range(price_input_len)]
         min_list = [min(h_list[input_index], l_list[input_index], o_list[input_index], c_list[input_index], last_c_list[input_index]) for input_index in range(price_input_len)]
         if min(min_list) > 0 and min(max_list) > 0:
-            tr_list = [max_list[input_index] / min_list[input_index] - 1 for input_index in range(price_input_len)]
-            atr = sum(tr_list) / price_input_len
-            exitindex = get_exit_index(h_list, l_list, c_list, atr * 2)
-            volatility = max(c_list[exitindex], c_list[price_input_len - 1]) / min(c_list[exitindex], c_list[price_input_len - 1]) - 1
-            if atr > 0 and volatility > 0 and atr < 10 and volatility < 1000:
-                rv = math.log(1 + volatility, 1 + atr)
+            tr_list = [max_list[input_index] / min_list[input_index] - 1 for input_index in range(price_input_len - atr_len - 1, price_input_len)]
+            #atr = sum(tr_list) / price_input_len
+            atr = sum(tr_list) / atr_len
+            exitindex, exitprice = get_exit_index(h_list, l_list, c_list, atr * 2)
+            #绝对波动
+            #volatility = max(c_list[exitindex], c_list[price_input_len - 1]) / min(c_list[exitindex], c_list[price_input_len - 1]) - 1
+            volatility = max(exitprice, c_list[price_input_len - 1]) / min(exitprice, c_list[price_input_len - 1]) - 1
+            if atr > 0 and volatility > 0 and atr < 5 and volatility < 500:
+                rv = math.log(1 + volatility, 1 + atr) #相对波动
                 max_rv = max(rv, max_rv)
                 if rv >= 1:
                     training_samples.extend(generate_training_sample(max_list, min_list, c_list[:exitindex+1], rv))
                     #mix_count = int(min(32, math.floor(rv)) ** 2 * 1) - 1
-                    mix_count = int(min(128, math.floor(volatility / atr)) * 1) - 1
+                    #mix_count = int(min(128, math.floor(volatility / atr)) * 1) - 1
+                    mix_count = int(min(100, math.floor(rv ** 2 * 1))) - 1
                     mix_index_list = np.random.choice(len(currency_markets), mix_count)
                     mix_key_list = list(currency_markets.keys())
                     for mix_index in mix_index_list:
-                        training_samples.extend(generate_training_mix_sample(date_list[:exitindex+1], max_list, min_list, c_list[:exitindex+1], rv, currency_markets[mix_key_list[mix_index]]))
+                        training_samples.extend(generate_training_mix_sample(date_list[:exitindex+1], max_list, min_list, c_list[:exitindex+1], rv, currency_markets[mix_key_list[mix_index]],exitprice))
     return training_samples, max_rv
 
 def generate_taining_data(training_market, currency_markets):
     training_data = []
     max_rv = 0
     maxstep = math.floor(len(training_market) * 1.0 / (price_input_len + 1.0)) + 1
-    for steplen in range(1, maxstep):
-        training_market_step = get_training_market(training_market, steplen)
-        training_total_len = len(training_market_step) - price_input_len
-        for training_data_index in range(training_total_len):
-            training_samples, max_rv = generate_training_samples(
-                #training_market_step[training_data_index:training_data_index+price_input_len+1], 
-                training_market_step[training_data_index:], 
-                currency_markets, max_rv)
-            training_data.extend(training_samples)
+    #for steplen in range(1, maxstep):
+        #training_market_step = get_training_market(training_market, steplen)
+        #training_total_len = len(training_market_step) - price_input_len
+    training_total_len = len(training_market) - price_input_len
+    for training_data_index in range(training_total_len):
+        training_samples, max_rv = generate_training_samples(
+            #training_market_step[training_data_index:training_data_index+price_input_len+1], 
+            #选取从当前日到结束日的k线数据（不定长）
+            #training_market_step[training_data_index:], 
+            training_market[training_data_index:], 
+            currency_markets, max_rv)
+        training_data.extend(training_samples)
     random.shuffle(training_data)
     return training_data, max_rv
 
