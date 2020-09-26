@@ -1,4 +1,4 @@
-# AI名称：海龟五号
+# AI名称：海龟六号
 
 # 2种基础训练数据：对数k线 对数镜象k线 
 
@@ -16,7 +16,7 @@ import mydb #这是数据库处理的相关代码
 import myfile #这是tfrecord文件保存的相关代码
 import mygenerator #这是训练数据生成器的相关代码
 
-myconsole.out("你好，我是海龟五号！我是海龟三号的微升级，ATR以20天计算，2倍ATR止损，并增加了“趋势”在训练数据中的比例！")
+myconsole.out("你好，我是海龟六号！我是海龟五号的0.5倍ATR止损版本！")
 myconsole.out("正在统计全球市场信息……")
 market_total, currency_total = mydb.get_market_count()
 training_market_count = myconsole.in_num("请输入要训练的市场数量，总计" + str(market_total) + "个市场：")
@@ -37,7 +37,7 @@ for (market_id,market_name) in market_list.items():
     training_market = mydb.load_market(market_id)
     myconsole.out("正在生成市场" + market_name + "的训练数据……")
     training_data, max_rv = mygenerator.generate_taining_data(training_market, currency_markets)
-    if max_rv < 2:
+    if max_rv < 1:
         continue
     myconsole.out("正在保存市场" + market_name + "的训练数据……")
     train_count, validation_count = myfile.save(training_data, market_id, train_count, validation_count, max_rv)

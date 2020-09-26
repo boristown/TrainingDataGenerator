@@ -115,7 +115,7 @@ def generate_training_samples(sample_prices, currency_markets, max_rv):
             tr_list = [max_list[input_index] / min_list[input_index] - 1 for input_index in range(price_input_len - atr_len - 1, price_input_len)]
             #atr = sum(tr_list) / price_input_len
             atr = sum(tr_list) / atr_len
-            exitindex, exitprice = get_exit_index(h_list, l_list, c_list, atr * 2)
+            exitindex, exitprice = get_exit_index(h_list, l_list, c_list, atr * 0.5)
             #绝对波动
             #volatility = max(c_list[exitindex], c_list[price_input_len - 1]) / min(c_list[exitindex], c_list[price_input_len - 1]) - 1
             volatility = max(exitprice, c_list[price_input_len - 1]) / min(exitprice, c_list[price_input_len - 1]) - 1
