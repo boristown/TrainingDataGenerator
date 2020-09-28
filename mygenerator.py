@@ -126,7 +126,7 @@ def generate_training_samples(sample_prices, currency_markets, max_rv):
                     training_samples.extend(generate_training_sample(max_list, min_list, c_list[:exitindex+1], rv))
                     #mix_count = int(min(32, math.floor(rv)) ** 2 * 1) - 1
                     #mix_count = int(min(128, math.floor(volatility / atr)) * 1) - 1
-                    mix_count = int(min(1000, math.floor(rv ** 3 * 1))) - 1
+                    mix_count = int(min(800, math.floor(rv ** 2.8* 1))) - 1
                     mix_index_list = np.random.choice(len(currency_markets), mix_count)
                     mix_key_list = list(currency_markets.keys())
                     for mix_index in mix_index_list:
