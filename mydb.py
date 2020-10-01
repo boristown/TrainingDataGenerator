@@ -62,7 +62,11 @@ def load_market(market_id):
         statement = 'SELECT date, o, h, l, c FROM pricehistory WHERE c > 0.0 and l > 0.0 and h > 0.0 and o > 0.0 and SYMBOL = "' + market_id + '" ' \
                             'order by date'
         mycursor.execute(statement)
-        dbresults = mycursor.fetchall()
+        try:
+            dbresults = mycursor.fetchall()
+        except:
+            print("数据库连接失败！")
+            return None
         for dbresult in dbresults:
             market.append({"date":dbresult[0], "o":dbresult[1], "h":dbresult[2], "l":dbresult[3], "c":dbresult[4]})
     marketlen = len(market)
