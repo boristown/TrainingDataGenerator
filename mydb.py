@@ -8,7 +8,8 @@ def connector():
             user=mypsw.user, 
             passwd=mypsw.passwd, 
             database=mypsw.database, 
-            auth_plugin='mysql_native_password')
+            auth_plugin='mysql_native_password'
+            )
         mycursor = myconnector.cursor()
     except Exception as e:
         myconsole.out(str(e))
@@ -64,8 +65,8 @@ def load_market(market_id):
         mycursor.execute(statement)
         try:
             dbresults = mycursor.fetchall()
-        except:
-            print("数据库连接失败！")
+        except Exception as e:
+            print("数据库连接失败！" + str(e))
             return None
         for dbresult in dbresults:
             market.append({"date":dbresult[0], "o":dbresult[1], "h":dbresult[2], "l":dbresult[3], "c":dbresult[4]})
