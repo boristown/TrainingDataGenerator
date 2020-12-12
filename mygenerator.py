@@ -3,7 +3,8 @@ import math
 import numpy as np
 import datetime
 
-price_input_len = 120
+#price_input_len = 120
+price_input_len = 225
 atr_len = 20
 
 def generate_training_sample_single(max_list, min_list, c_list, rv):
@@ -120,14 +121,15 @@ def generate_training_samples(sample_prices, currency_markets, max_rv):
             #volatility = max(c_list[exitindex], c_list[price_input_len - 1]) / min(c_list[exitindex], c_list[price_input_len - 1]) - 1
             volatility = max(exitprice, c_list[price_input_len - 1]) / min(exitprice, c_list[price_input_len - 1]) - 1
             if atr > 0 and volatility > 0 and atr < 5 and volatility < 500:
-                rv = math.log(1 + volatility, 1 + atr) #相对波动
+                rv = math.log(1 + volatility, 1 + atr/2) #相对波动
                 max_rv = max(rv, max_rv)
                 if rv >= 1:
                     training_samples.extend(generate_training_sample(max_list, min_list, c_list[:exitindex+1], rv))
                     #mix_count = int(min(32, math.floor(rv)) ** 2 * 1) - 1
                     #mix_count = int(min(128, math.floor(volatility / atr)) * 1) - 1
-                    mix_count = int(min(400, math.floor(rv ** 2.0 * 4))) - 1
-                    mix_index_list = np.random.choice(len(currency_markets), mix_count)
+                    #mix_count = int(min(400, math.floor(rv ** 2.0 * 4))) - 1
+                    mix_count = int(min(400, math.floor(rv ** 2.0))) - 1
+                    mix_index_list = np.random.choice(len(currency_markets), mix_count) 
                     mix_key_list = list(currency_markets.keys())
                     for mix_index in mix_index_list:
                         training_samples.extend(generate_training_mix_sample(date_list[:exitindex+1], max_list, min_list, c_list[:exitindex+1], rv, currency_markets[mix_key_list[mix_index]],exitprice))
