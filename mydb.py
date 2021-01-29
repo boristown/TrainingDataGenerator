@@ -2,6 +2,9 @@ import mypsw
 import myconsole
 import mysql.connector
 
+split_date_min_str = '2019-11-16'
+split_date_max_str = '2020-6-28'
+
 def connector():
     try:
         myconnector = mysql.connector.connect(host=mypsw.host, 
@@ -33,7 +36,8 @@ def load_market_list(training_market_count):
     myconnector, mycursor = connector()
     if myconnector:
         statement = 'select SYMBOL, max(SYMBOL_ALIAS) from symbol_alias ' \
-        'where market_type <> "外汇" group by symbol order by rand() ' \
+        'where symbol = "1057391" ' \
+        'market_type <> "外汇" group by symbol order by rand() ' \
         'limit ' + str(training_market_count)
         mycursor.execute(statement)
         dbresults = mycursor.fetchall()
@@ -61,7 +65,45 @@ def load_market(market_id):
     myconnector, mycursor = connector()
     if myconnector:
         statement = 'SELECT date, o, h, l, c FROM pricehistory WHERE c > 0.0 and l > 0.0 and h > 0.0 and o > 0.0 and SYMBOL = "' + market_id + '" ' \
-                            'order by date'
+                            ' and date < "' + split_date_max_str +  '" order by date'
+        mycursor.execute(statement)
+        try:
+            dbresults = mycursor.fetchall()
+        except Exception as e:
+            print("数据库连接失败！" + str(e))
+            return None
+        for dbresult in dbresults:
+            market.append({"date":dbresult[0], "o":dbresult[1], "h":dbresult[2], "l":dbresult[3], "c":dbresult[4]})
+    marketlen = len(market)
+    price_index1 = 0
+    price_index2 = 1
+    price_index3 = 2
+    for price_index1 in range(marketlen-2):
+        price_index2 = price_index1 + 1
+        price_index3 = price_index2 + 1
+        if price_index3 >= marketlen:
+            break
+        close1 = market[price_index1]["c"]
+        close2 = market[price_index2]["c"]
+        close3 = market[price_index3]["c"]
+        open2 = market[price_index2]["o"]
+        open3 = market[price_index3]["o"]
+        gap12 = max(close1,open2) / min(close1,open2) - 1
+        gap23 = max(close2,open3) / min(close2,open3) - 1
+        gap13 = max(close1,open3) / min(close1,open3) - 1
+        ratio12 = max(close1,close2) / min(close1,close2) - 1
+        ratio13 = max(close1,close3) / min(close1,close3) - 1
+        if (gap12 > gap13 and gap23 > gap13) or ratio12 > (ratio13 * 10):
+            market.remove(market[price_index2])
+            marketlen -= 1
+    return market
+
+def load_varlidation_market(market_id):
+    market = []
+    myconnector, mycursor = connector()
+    if myconnector:
+        statement = 'SELECT date, o, h, l, c FROM pricehistory WHERE c > 0.0 and l > 0.0 and h > 0.0 and o > 0.0 and SYMBOL = "' + market_id + '" ' \
+                            ' and date > "' + split_date_min_str +  '" order by date'
         mycursor.execute(statement)
         try:
             dbresults = mycursor.fetchall()

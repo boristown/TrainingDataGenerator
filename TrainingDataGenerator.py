@@ -30,7 +30,7 @@ import mydb #这是数据库处理的相关代码
 import myfile #这是tfrecord文件保存的相关代码
 import mygenerator #这是训练数据生成器的相关代码
 
-myconsole.out("您好，即将生成海龟X的训练数据。")
+myconsole.out("您好，即将生成海龟X的训练数据。采用渐进式的训练方案，首次训练使用BTC一个市场，通过N轮扩展，增加到2^N个市场，使用最后两个月的数据为验证级。")
 myconsole.out("正在统计全球市场信息……")
 market_total, currency_total = mydb.get_market_count()
 training_market_count = myconsole.in_num("请输入要训练的市场数量，总计" + str(market_total) + "个市场：")
@@ -51,10 +51,15 @@ for (market_id,market_name) in market_list.items():
     training_market = None
     while training_market is None:
         training_market = mydb.load_market(market_id)
+        validation_market = mydb.load_varlidation_market(market_id)
     myconsole.out("正在生成市场" + market_name + "的训练数据……")
     training_data, max_rv = mygenerator.generate_taining_data(training_market, currency_markets)
     if max_rv < 1:
         continue
     myconsole.out("正在保存市场" + market_name + "的训练数据……")
     train_count, validation_count = myfile.save(training_data, market_id, train_count, validation_count, max_rv)
+    myconsole.out("正在生成市场" + market_name + "的验证数据……")
+    validation_data, max_rv = mygenerator.generate_taining_data(validation_market, currency_markets)
+    myconsole.out("正在保存市场" + market_name + "的验证数据……")
+    train_count, validation_count = myfile.save_validation(training_data, market_id, train_count, validation_count, max_rv)
     myconsole.out("训练集：" + str(train_count) + "/验证集：" + str(validation_count))

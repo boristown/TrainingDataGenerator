@@ -6,12 +6,18 @@ import math
 validation_ratio = 0.02
 
 def save(training_data, market_id, train_count, validation_count, max_rv):
-    if random.random() < validation_ratio:
-        prefix="validation-"
-        validation_count += len(training_data)
-    else:
-        prefix="train-"
-        train_count += len(training_data)
+    prefix="train-"
+    train_count += len(training_data)
+    return save_tfrecord(training_data, market_id, train_count, validation_count, max_rv, prefix)
+
+
+def save_validation(training_data, market_id, train_count, validation_count, max_rv):
+    prefix="validation-"
+    validation_count += len(training_data)
+    return save_tfrecord(training_data, market_id, train_count, validation_count, max_rv, prefix)
+
+
+def save_tfrecord(training_data, market_id, train_count, validation_count, max_rv, prefix):
     path = "Output"
     isExists=os.path.exists(path)
     if not isExists:
