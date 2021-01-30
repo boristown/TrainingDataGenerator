@@ -2,6 +2,7 @@ import tensorflow.compat.v1 as tf
 import random
 import os
 import math
+import json
 
 validation_ratio = 0.02
 
@@ -35,7 +36,7 @@ def save_tfrecord(training_data, market_id, train_count, validation_count, max_r
             #"label": tf.train.Feature(float_list=tf.train.FloatList(value=list(map(float,training_sample["label"])))),
             "label": tf.train.Feature(int64_list=tf.train.Int64List(value=training_sample["label"])),
         }))
-
+        #print(json.dumps(training_sample))
         tfwriter.write(example.SerializeToString())
 
     tfwriter.close()

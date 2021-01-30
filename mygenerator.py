@@ -25,15 +25,20 @@ def generate_training_sample_single(max_list, min_list, c_list, rv):
         rise_flag = True
     #从暴跌到暴涨的5种Label
     if rv <= 1:
-        training_sample["label"] = [2] #震荡
+        training_sample["label"] = [3] #震荡
     elif rv <= 3:
         if rise_flag:
-            training_sample["label"] = [3] #上涨
+            training_sample["label"] = [4] #微涨
         else:
-            training_sample["label"] = [1] #下跌
+            training_sample["label"] = [2] #微跌
+    elif rv <= 6:
+        if rise_flag:
+            training_sample["label"] = [5] #大涨
+        else:
+            training_sample["label"] = [1] #大跌
     else:
         if rise_flag:
-            training_sample["label"] = [4] #暴涨
+            training_sample["label"] = [6] #暴涨
         else:
             training_sample["label"] = [0] #暴跌
     return training_sample
@@ -141,7 +146,7 @@ def generate_training_samples(sample_prices, currency_markets, max_rv):
                 max_rv = max(rv, max_rv)
                 #if rv >= 1:
                 training_samples.extend(generate_training_sample(max_list, min_list, c_list[:exitindex+1], rv))
-                mix_count = int(min(100, math.floor((rv + 1) ** 2.0)))
+                mix_count = int(min(80, math.floor((rv + 1) ** 2.0)))
                 mix_index_list = np.random.choice(len(currency_markets), mix_count)
                 mix_key_list = list(currency_markets.keys())
                 for mix_index in mix_index_list:

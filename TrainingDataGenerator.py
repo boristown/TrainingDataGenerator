@@ -54,12 +54,147 @@ for (market_id,market_name) in market_list.items():
         validation_market = mydb.load_varlidation_market(market_id)
     myconsole.out("正在生成市场" + market_name + "的训练数据……")
     training_data, max_rv = mygenerator.generate_taining_data(training_market, currency_markets)
+    label0 = 0
+    label1 = 0
+    label2 = 0
+    label3 = 0
+    label4 = 0
+    label5 = 0
+    label6 = 0
+    for training_data_item in training_data:
+        if training_data_item["label"] == [0]:
+            label0+=1
+        if training_data_item["label"] == [1]:
+            label1+=1
+        if training_data_item["label"] == [2]:
+            label2+=1
+        if training_data_item["label"] == [3]:
+            label3+=1
+        if training_data_item["label"] == [4]:
+            label4+=1
+        if training_data_item["label"] == [5]:
+            label5+=1
+        if training_data_item["label"] == [6]:
+            label6+=1
+    labelMin = min(label0, label1, label2, label3, label4, label5, label6)
+    print("Label0:" + str(label0))
+    print("Label1:" + str(label1))
+    print("Label2:" + str(label2))
+    print("Label3:" + str(label3))
+    print("Label4:" + str(label4))
+    print("Label5:" + str(label5))
+    print("Label6:" + str(label6))
+    print("Label_Min:" + str(labelMin))
+    label0 = 0
+    label1 = 0
+    label2 = 0
+    label3 = 0
+    label4 = 0
+    label5 = 0
+    label6 = 0
+    for training_data_item in training_data[::-1]:
+        if training_data_item["label"] == [0]:
+            label0+=1
+            if label0 > labelMin:
+                training_data.remove(training_data_item)
+        if training_data_item["label"] == [1]:
+            label1+=1
+            if label1 > labelMin:
+                training_data.remove(training_data_item)
+        if training_data_item["label"] == [2]:
+            label2+=1
+            if label2 > labelMin:
+                training_data.remove(training_data_item)
+        if training_data_item["label"] == [3]:
+            label3+=1
+            if label3 > labelMin:
+                training_data.remove(training_data_item)
+        if training_data_item["label"] == [4]:
+            label4+=1
+            if label4 > labelMin:
+                training_data.remove(training_data_item)
+        if training_data_item["label"] == [5]:
+            label5+=1
+            if label5 > labelMin:
+                training_data.remove(training_data_item)
+        if training_data_item["label"] == [6]:
+            label6+=1
+            if label6 > labelMin:
+                training_data.remove(training_data_item)
     #if max_rv < 1:
     #    continue
     myconsole.out("正在保存市场" + market_name + "的训练数据……")
     train_count, validation_count = myfile.save(training_data, market_id, train_count, validation_count, max_rv)
+
     myconsole.out("正在生成市场" + market_name + "的验证数据……")
     validation_data, max_rv = mygenerator.generate_taining_data(validation_market, currency_markets)
+    label0 = 0
+    label1 = 0
+    label2 = 0
+    label3 = 0
+    label4 = 0
+    label5 = 0
+    label6 = 0
+    for validation_data_item in validation_data:
+        if validation_data_item["label"] == [0]:
+            label0+=1
+        if validation_data_item["label"] == [1]:
+            label1+=1
+        if validation_data_item["label"] == [2]:
+            label2+=1
+        if validation_data_item["label"] == [3]:
+            label3+=1
+        if validation_data_item["label"] == [4]:
+            label4+=1
+        if validation_data_item["label"] == [5]:
+            label5+=1
+        if validation_data_item["label"] == [6]:
+            label6+=1
+    labelMin = min(label0, label1, label2, label3, label4, label5, label6)
+    print("Label0:" + str(label0))
+    print("Label1:" + str(label1))
+    print("Label2:" + str(label2))
+    print("Label3:" + str(label3))
+    print("Label4:" + str(label4))
+    print("Label5:" + str(label5))
+    print("Label6:" + str(label6))
+    print("Label_Min:" + str(labelMin))
+    label0 = 0
+    label1 = 0
+    label2 = 0
+    label3 = 0
+    label4 = 0
+    label5 = 0
+    label6 = 0
+    for validation_data_item in validation_data[::-1]:
+        if validation_data_item["label"] == [0]:
+            label0+=1
+            if label0 > labelMin:
+                validation_data.remove(validation_data_item)
+        if validation_data_item["label"] == [1]:
+            label1+=1
+            if label1 > labelMin:
+                validation_data.remove(validation_data_item)
+        if validation_data_item["label"] == [2]:
+            label2+=1
+            if label2 > labelMin:
+                validation_data.remove(validation_data_item)
+        if validation_data_item["label"] == [3]:
+            label3+=1
+            if label3 > labelMin:
+                validation_data.remove(validation_data_item)
+        if validation_data_item["label"] == [4]:
+            label4+=1
+            if label4 > labelMin:
+                validation_data.remove(validation_data_item)
+        if validation_data_item["label"] == [5]:
+            label5+=1
+            if label5 > labelMin:
+                validation_data.remove(validation_data_item)
+        if validation_data_item["label"] == [6]:
+            label6+=1
+            if label6 > labelMin:
+                validation_data.remove(validation_data_item)
     myconsole.out("正在保存市场" + market_name + "的验证数据……")
-    train_count, validation_count = myfile.save_validation(training_data, market_id, train_count, validation_count, max_rv)
+    train_count, validation_count = myfile.save_validation(validation_data, market_id, train_count, validation_count, max_rv)
     myconsole.out("训练集：" + str(train_count) + "/验证集：" + str(validation_count))
