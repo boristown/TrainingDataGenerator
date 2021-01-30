@@ -32,7 +32,8 @@ def save_tfrecord(training_data, market_id, train_count, validation_count, max_r
             "max_prices": tf.train.Feature(float_list=tf.train.FloatList(value=list(map(float,training_sample["max_prices"])))),
             "min_prices": tf.train.Feature(float_list=tf.train.FloatList(value=list(map(float,training_sample["min_prices"])))),
             "c_prices": tf.train.Feature(float_list=tf.train.FloatList(value=list(map(float,training_sample["c_prices"])))),
-            "label": tf.train.Feature(float_list=tf.train.FloatList(value=list(map(float,training_sample["label"])))),
+            #"label": tf.train.Feature(float_list=tf.train.FloatList(value=list(map(float,training_sample["label"])))),
+            "label": tf.train.Feature(int64_list=tf.train.Int64List(value=training_sample["label"])),
         }))
 
         tfwriter.write(example.SerializeToString())

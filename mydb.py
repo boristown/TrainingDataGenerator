@@ -36,7 +36,7 @@ def load_market_list(training_market_count):
     myconnector, mycursor = connector()
     if myconnector:
         statement = 'select SYMBOL, max(SYMBOL_ALIAS) from symbol_alias ' \
-        'where symbol = "1057391" ' \
+        'where symbol = "1057391" and ' \
         'market_type <> "外汇" group by symbol order by rand() ' \
         'limit ' + str(training_market_count)
         mycursor.execute(statement)

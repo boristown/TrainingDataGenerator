@@ -54,8 +54,8 @@ for (market_id,market_name) in market_list.items():
         validation_market = mydb.load_varlidation_market(market_id)
     myconsole.out("正在生成市场" + market_name + "的训练数据……")
     training_data, max_rv = mygenerator.generate_taining_data(training_market, currency_markets)
-    if max_rv < 1:
-        continue
+    #if max_rv < 1:
+    #    continue
     myconsole.out("正在保存市场" + market_name + "的训练数据……")
     train_count, validation_count = myfile.save(training_data, market_id, train_count, validation_count, max_rv)
     myconsole.out("正在生成市场" + market_name + "的验证数据……")

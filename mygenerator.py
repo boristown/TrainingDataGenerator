@@ -19,7 +19,23 @@ def generate_training_sample_single(max_list, min_list, c_list, rv):
     training_sample["max_prices"] = [(max_log_value-center_price)/price_range+0.5 for max_log_value in max_log_list][-1::-1]
     training_sample["min_prices"] = [(min_log_value-center_price)/price_range+0.5 for min_log_value in min_log_list][-1::-1]
     training_sample["c_prices"] = [(c_log_value-center_price)/price_range+0.5 for c_log_value in c_log_list][:price_input_len][-1::-1]
-    training_sample["label"] = [0.5 + math.atan(rv) / math.pi] if c_list[-1] >  c_list[price_input_len - 1] else [0.5 - math.atan(rv) / math.pi]
+    #training_sample["label"] = [0.5 + math.atan(rv) / math.pi] if c_list[-1] >  c_list[price_input_len - 1] else [0.5 - math.atan(rv) / math.pi]
+    rise_flag = False
+    if c_list[-1] >  c_list[price_input_len - 1]:
+        rise_flag = True
+    #从暴跌到暴涨的5种Label
+    if rv <= 1:
+        training_sample["label"] = [2] #震荡
+    elif rv <= 3:
+        if rise_flag:
+            training_sample["label"] = [3] #上涨
+        else:
+            training_sample["label"] = [1] #下跌
+    else:
+        if rise_flag:
+            training_sample["label"] = [4] #暴涨
+        else:
+            training_sample["label"] = [0] #暴跌
     return training_sample
 
 def generate_training_sample(max_list, min_list, c_list, rv):
@@ -53,7 +69,7 @@ def generate_training_mix_sample(date_list, max_list, min_list, c_list, rv, curr
         #volatility_mix = max(c_list_mix[-1], c_list_mix[price_input_len - 1]) / min(c_list_mix[-1], c_list_mix[price_input_len - 1]) - 1
         volatility_mix = max(exitprice_mix, c_list_mix[price_input_len - 1]) / min(exitprice_mix, c_list_mix[price_input_len - 1]) - 1
         if atr_mix > 0 and volatility_mix > 0:
-            rv = math.log(1 + volatility_mix, 1 + atr_mix)
+            rv = math.log(1 + volatility_mix, 1 + atr_mix / 2)
     return generate_training_sample(max_list_mix, min_list_mix, c_list_mix, rv)
 
 def get_exit_index(h_list, l_list, c_list, atr2):
@@ -123,16 +139,13 @@ def generate_training_samples(sample_prices, currency_markets, max_rv):
             if atr > 0 and volatility > 0 and atr < 5 and volatility < 500:
                 rv = math.log(1 + volatility, 1 + atr/2) #相对波动
                 max_rv = max(rv, max_rv)
-                if rv >= 1:
-                    training_samples.extend(generate_training_sample(max_list, min_list, c_list[:exitindex+1], rv))
-                    #mix_count = int(min(32, math.floor(rv)) ** 2 * 1) - 1
-                    #mix_count = int(min(128, math.floor(volatility / atr)) * 1) - 1
-                    #mix_count = int(min(400, math.floor(rv ** 2.0 * 4))) - 1
-                    mix_count = int(min(400, math.floor(rv ** 2.0))) - 1
-                    mix_index_list = np.random.choice(len(currency_markets), mix_count) 
-                    mix_key_list = list(currency_markets.keys())
-                    for mix_index in mix_index_list:
-                        training_samples.extend(generate_training_mix_sample(date_list[:exitindex+1], max_list, min_list, c_list[:exitindex+1], rv, currency_markets[mix_key_list[mix_index]],exitprice))
+                #if rv >= 1:
+                training_samples.extend(generate_training_sample(max_list, min_list, c_list[:exitindex+1], rv))
+                mix_count = int(min(100, math.floor((rv + 1) ** 2.0)))
+                mix_index_list = np.random.choice(len(currency_markets), mix_count)
+                mix_key_list = list(currency_markets.keys())
+                for mix_index in mix_index_list:
+                    training_samples.extend(generate_training_mix_sample(date_list[:exitindex+1], max_list, min_list, c_list[:exitindex+1], rv, currency_markets[mix_key_list[mix_index]],exitprice))
     return training_samples, max_rv
 
 def generate_taining_data(training_market, currency_markets):
