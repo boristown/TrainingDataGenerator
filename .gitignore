@@ -341,3 +341,4 @@ healthchecksdb
 
 # psw file
 mypsw.py
+*.tfrecord
