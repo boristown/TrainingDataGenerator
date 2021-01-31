@@ -1,6 +1,11 @@
 import mypsw
 import myconsole
+import datetime
+import time
+import re
+import requests
 import mysql.connector
+import math
 
 split_date_min_str = '2019-11-16'
 split_date_max_str = '2020-6-28'
@@ -33,10 +38,16 @@ def get_market_count():
 
 def load_market_list(training_market_count):
     market_list = {}
+    symbol_list = [
+       #'"1057391"', #BTC
+       #'"1061445"', #LTC
+       #'"1057392"', #XRP
+       '"1068308"', #XRP/BTC
+       ]
     myconnector, mycursor = connector()
     if myconnector:
         statement = 'select SYMBOL, max(SYMBOL_ALIAS) from symbol_alias ' \
-        'where symbol = "1057391" and ' \
+        'where symbol in ( ' + ','.join(symbol_list) + ' ) and ' \
         'market_type <> "外汇" group by symbol order by rand() ' \
         'limit ' + str(training_market_count)
         mycursor.execute(statement)
@@ -75,6 +86,7 @@ def load_market(market_id):
         for dbresult in dbresults:
             market.append({"date":dbresult[0], "o":dbresult[1], "h":dbresult[2], "l":dbresult[3], "c":dbresult[4]})
     marketlen = len(market)
+    print("len = " + str(marketlen))
     price_index1 = 0
     price_index2 = 1
     price_index3 = 2
@@ -113,6 +125,7 @@ def load_varlidation_market(market_id):
         for dbresult in dbresults:
             market.append({"date":dbresult[0], "o":dbresult[1], "h":dbresult[2], "l":dbresult[3], "c":dbresult[4]})
     marketlen = len(market)
+    print("len = " + str(marketlen))
     price_index1 = 0
     price_index2 = 1
     price_index3 = 2
@@ -135,3 +148,79 @@ def load_varlidation_market(market_id):
             market.remove(market[price_index2])
             marketlen -= 1
     return market
+
+def get_training_price_live(pairId):
+    is_currency = False
+    startdate = datetime.datetime.strptime('2010-1-1', '%Y-%m-%d')
+    enddate = datetime.datetime.strptime(split_date_max_str, '%Y-%m-%d')
+    return get_history_price(pairId, is_currency, startdate, enddate)
+
+def get_validation_price_live(pairId):
+    is_currency = False
+    startdate = datetime.datetime.strptime(split_date_min_str, '%Y-%m-%d')
+    enddate = datetime.datetime.strptime('2021-12-31', '%Y-%m-%d')
+    return get_history_price(pairId, is_currency, startdate, enddate)
+
+def get_history_price(pairId, is_currency, startdate, enddate):
+    marketList = []
+    priceList = []
+    if is_currency:
+        smlID_str = '1072600'
+    else:
+        smlID_str = '25609849'
+
+    url = "https://cn.investing.com/instruments/HistoricalDataAjax"
+
+    headers = {
+        'accept': "text/plain, */*; q=0.01",
+        'origin': "https://cn.investing.com",
+        'x-requested-with': "XMLHttpRequest",
+        'user-agent': "Mozilla/5.0 (Windows NT 10.0; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/72.0.3626.121 Safari/537.36",
+        'content-type': "application/x-www-form-urlencoded",
+        'cache-control': "no-cache",
+        'postman-token': "17db1643-3ef6-fa9e-157b-9d5058f391e4"
+        }
+    #st_date_str = (datetime.datetime.utcnow() + datetime.timedelta(days = -startdays)).strftime(dateformat).replace("-","%2F")
+    #end_date_str = (datetime.datetime.utcnow()).strftime(dateformat).replace("-","%2F")
+    st_date_str = startdate.strftime("%Y-%m-%d").replace("-","%2F")
+    end_date_str = enddate.strftime("%Y-%m-%d").replace("-","%2F")
+    payload = "action=historical_data&curr_id="+ pairId +"&end_date=" + end_date_str + "&header=null&interval_sec=Daily&smlID=" + smlID_str + "&sort_col=date&sort_ord=DESC&st_date=" + st_date_str
+    try:
+        response = requests.request("POST", url, data=payload, headers=headers, verify=False, timeout=40)
+    except Exception as e:
+        time.sleep(7)
+    if response == None:
+        pass
+    table_pattern = r'<tr>.+?<td.+?data-real-value="([^><"]+?)".+?</td>' \
+            '.+?data-real-value="([^><"]+?)".+?</td>.+?data-real-value="([^><"]+?)".+?</td>'  \
+            '.+?data-real-value="([^><"]+?)".+?</td>.+?data-real-value="([^><"]+?)".+?</td>'  \
+            '.+?</tr>'
+    row_matchs = re.finditer(table_pattern,response.text,re.S)
+    timestamp_list = []
+    price_list = []
+    openprice_list = []
+    highprice_list = []
+    lowprice_list = []
+    price_count = 0
+    insert_val = []
+    #print(str(response.text))
+    lastclose = -1
+    for cell_matchs in row_matchs:
+        price_count += 1
+        #print(str(cell_matchs.group(0)))
+        timestamp = int(str(cell_matchs.group(1)))
+        price = float(str(cell_matchs.group(2)).replace(",",""))
+        openprice = float(str(cell_matchs.group(3)).replace(",",""))
+        highprice = float(str(cell_matchs.group(4)).replace(",",""))
+        lowprice = float(str(cell_matchs.group(5)).replace(",",""))
+        #if price_count == 1 or price != price_list[price_count-2]:
+        if price > 0 and openprice > 0 and highprice > 0 and lowprice > 0 and (highprice != lastclose or lowprice != lastclose):
+            timestamp_list.append(timestamp)
+            price_list.append(price)
+            openprice_list.append(openprice)
+            highprice_list.append(highprice)
+            lowprice_list.append(lowprice)
+        lastclose = price
+    marketList = [ {"date":datetime.datetime.fromtimestamp(timestamp_list[i]), "o":openprice_list[i], "h":highprice_list[i], "l":lowprice_list[i], "c":price_list[i]} for i in range(len(timestamp_list)-1,-1,-1) ]
+    #return timestamp_list, price_list, openprice_list, highprice_list, lowprice_list
+    return marketList

@@ -50,8 +50,10 @@ for (market_id,market_name) in market_list.items():
     myconsole.out("正在载入市场" + market_name + "的数据……" + str(market_index) + "/" + str(training_market_count))
     training_market = None
     while training_market is None:
-        training_market = mydb.load_market(market_id)
-        validation_market = mydb.load_varlidation_market(market_id)
+        #training_market = mydb.load_market(market_id)
+        training_market = mydb.get_training_price_live(market_id)
+        #validation_market = mydb.load_varlidation_market(market_id)
+        validation_market = mydb.get_validation_price_live(market_id)
     myconsole.out("正在生成市场" + market_name + "的训练数据……")
     training_data, max_rv = mygenerator.generate_taining_data(training_market, currency_markets)
     label0 = 0

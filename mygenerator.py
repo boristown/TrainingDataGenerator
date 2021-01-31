@@ -2,6 +2,7 @@ import random
 import math
 import numpy as np
 import datetime
+import json
 
 #price_input_len = 120
 price_input_len = 225
@@ -146,11 +147,14 @@ def generate_training_samples(sample_prices, currency_markets, max_rv):
                 max_rv = max(rv, max_rv)
                 #if rv >= 1:
                 training_samples.extend(generate_training_sample(max_list, min_list, c_list[:exitindex+1], rv))
+                print("\rCount=" + str(len(training_samples)), end="")
                 mix_count = int(min(80, math.floor((rv + 1) ** 2.0)))
                 mix_index_list = np.random.choice(len(currency_markets), mix_count)
                 mix_key_list = list(currency_markets.keys())
                 for mix_index in mix_index_list:
                     training_samples.extend(generate_training_mix_sample(date_list[:exitindex+1], max_list, min_list, c_list[:exitindex+1], rv, currency_markets[mix_key_list[mix_index]],exitprice))
+                    print("\rCount=" + str(len(training_samples)), end="")
+    print("")
     return training_samples, max_rv
 
 def generate_taining_data(training_market, currency_markets):
