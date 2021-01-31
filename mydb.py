@@ -41,7 +41,7 @@ def load_market_list(training_market_count):
     symbol_list = [
        #'"1057391"', #BTC
        #'"1061445"', #LTC
-       #'"1057392"', #XRP
+       '"1057392"', #XRP
        '"1068308"', #XRP/BTC
        ]
     myconnector, mycursor = connector()
